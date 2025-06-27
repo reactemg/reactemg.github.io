@@ -1,0 +1,329 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+  <meta charset="utf-8">
+  <meta name="description"
+    content="Surface electromyography (sEMG) signals show promise for effective human–computer interfaces, particularly in rehabilitation and prosthetics. However, challenges remain in developing systems that respond quickly and reliably to user intent, across different subjects and without requiring time-consuming calibration. In this work, we propose a framework for EMG-based intent detection that addresses these challenges. Unlike traditional gesture recognition models that wait until a gesture is completed before classifying it, ReactEMG uses a segmentation strategy to assign intent labels at every timestep as the gesture unfolds. We introduce a novel masked modeling strategy that aligns muscle activations with their corresponding user intents, enabling rapid onset detection and stable tracking of ongoing gestures. In evaluations against baseline methods, considering both accuracy and stability for device control, our approach surpasses state-of-the-art performance in zero-shot transfer conditions, demonstrating its potential for wearable robotics and next-generation prosthetic systems.">
+  <meta name="author" content="">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Zero-Shot, Low-Latency Intent Detection via sEMG</title>
+
+  <link href="https://fonts.googleapis.com/css?family=Google+Sans|Noto+Sans|Castoro" rel="stylesheet">
+
+  <link rel="stylesheet" href="./static/css/bulma.min.css">
+  <link rel="stylesheet" href="./static/css/bulma-carousel.min.css">
+  <link rel="stylesheet" href="./static/css/bulma-slider.min.css">
+  <link rel="stylesheet" href="./static/css/fontawesome.all.min.css">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/jpswalsh/academicons@1/css/academicons.min.css">
+  <link rel="stylesheet" href="./static/css/index.css">
+
+  <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
+  <script defer src="./static/js/fontawesome.all.min.js"></script>
+  <script src="./static/js/bulma-carousel.min.js"></script>
+  <script src="./static/js/bulma-slider.min.js"></script>
+  <script src="./static/js/index.js"></script>
+</head>
+
+<body>
+
+  <nav class="navbar" role="navigation" aria-label="main navigation">
+    <div class="navbar-brand">
+      <a role="button" class="navbar-burger" aria-label="menu" aria-expanded="false">
+        <span aria-hidden="true"></span>
+        <span aria-hidden="true"></span>
+        <span aria-hidden="true"></span>
+      </a>
+    </div>
+  </nav>
+
+  <!-- <section>
+    <div class="hero-video" style="position: absolute; inset: 0;">
+      <img src="static/img/teaser.png" style="width: 100vw;  object-fit: cover;">
+    </div>
+  </section> -->
+
+  <section class="hero">
+    <div class="hero-body">
+      <div class="container is-max-desktop">
+        <div class="columns is-centered">
+          <div class="column has-text-centered">
+
+  
+
+
+              <div class="publication-header">
+                <h1 class="title is-2 publication-title">
+                  <b>ReactEMG</b>: Zero-Shot, Low-Latency Intent Detection via sEMG
+                </h1>
+
+                <p class="subtitle is-size-5-mobile is-flex is-flex-wrap-wrap is-justify-content-center"
+                  style="margin: 0.5rem 0 0 0; color: #666;">
+                  <span class="author-block px-1"><a href="http://runshengwang.com/">Runsheng Wang<sup>*</sup></a>,</span>
+                  <span class="author-block px-1"><a href="https://reactemg.github.io/">Xinyue Zhu<sup>*</sup></a>,</span>
+                  <span class="author-block px-1"><a href="https://avachen.net/">Ava Chen</a>,</span>
+                  <span class="author-block px-1"><a href="https://jxu.ai/">Jingxi Xu</a>,</span>
+                  <span class="author-block px-1"><a href="https://reactemg.github.io/">Lauren Winterbottom</a>,</span>
+                  <span class="author-block px-1"><a href="https://www.vagelos.columbia.edu/profile/dawn-nilsen-edd">Dawn M. Nilsen<sup>+</sup></a>,</span>
+                  <span class="author-block px-1"><a href="https://www.neurology.columbia.edu/profile/joel-stein-m-d">Joel Stein<sup>+</sup></a>,</span>
+                  <span class="author-block px-1"><a href="https://www.me.columbia.edu/faculty/matei-ciocarlie">Matei Ciocarlie<sup>+</sup></a></span>
+                </p>
+                
+                <p class="is-size-5 publication-authors" style="margin: 0; color: #666;">
+                  <sup>*</sup>Equal contribution &nbsp;&nbsp; <sup>+</sup>Co-Principal Investigators
+                </p>
+                <p class="is-size-5 publication-authors" style="margin: 0; font-size: 200%">
+                  <b>Columbia University</b>
+                </p>
+                
+              </div>
+
+
+
+            <br><br>
+
+
+
+            <!-- social / publication links -->
+            <div class="columns is-centered has-text-centered">
+              <div class="publication-links">
+                <span class="link-block">
+                  <a href="https://arxiv.org/abs/2506.19815"
+                    class="external-link button is-normal is-rounded is-dark">
+                    <span class="icon"><i class="fas fa-file-pdf"></i></span>
+                    <span>Paper</span>
+                  </a>
+                </span>
+                <span class="link-block">
+                  <a href="https://www.youtube.com/watch?"
+                    class="external-link button is-normal is-rounded is-dark">
+                    <span class="icon"><i class="fab fa-youtube"></i></span>
+                    <span>Video</span>
+                  </a>
+                </span>
+                <span class="link-block">
+                  <a href="" class="external-link button is-normal is-rounded is-dark">
+                    <span class="icon"><i class="fab fa-github"></i></span>
+                    <span>Code & Dataset</span>
+                  </a>
+                </span>
+              </div>
+            </div>
+
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+
+
+  <div class="container">
+      <div class="content has-text-justified">
+        <strong>ReactEMG</strong> is a low-latency, high-accuracy model that predicts hand gestures from forearm EMG signals at every timestep. Its masked-segmentation architecture jointly learns EMG features and user intent, enabling zero-shot generalization without subject-specific calibration and making it well-suited for robotic control.
+      </div>
+  </div>
+
+  <br><br>
+  <section class="overall teaser">
+    <div class="container">
+      <div class="hero-body has-text-centered">
+        <video
+          id="teaser_video"
+          width="100%"
+          muted
+          autoplay
+          playsinline
+          controls
+          preload="auto"
+          style="border-radius:10px;",
+          loop
+        >
+          <source src="video/website_loop_vid_compressed.mp4" type="video/mp4">
+        </video>
+      </div>
+    </div>
+  </section>
+
+
+
+  
+  <section class="section">
+    <div class="container">
+      <div class="columns is-centered has-text-centered">
+        <div class="column is-full-width">
+          <h2 class="title is-3">Abstract</h2>
+          <div class="content has-text-justified">
+            <p>
+              Surface electromyography (sEMG) signals show promise for effective human–computer interfaces, particularly in rehabilitation and prosthetics. However, challenges remain in developing systems that respond quickly and reliably to user intent, across different subjects and without requiring time-consuming calibration. In this work, we propose a framework for EMG-based intent detection that addresses these challenges. Unlike traditional gesture recognition models that wait until a gesture is completed before classifying it, ReactEMG uses a segmentation strategy to assign intent labels at every timestep as the gesture unfolds. We introduce a novel masked modeling strategy that aligns muscle activations with their corresponding user intents, enabling rapid onset detection and stable tracking of ongoing gestures. In evaluations against baseline methods, considering both accuracy and stability for device control, our approach surpasses state-of-the-art performance in zero-shot transfer conditions, demonstrating its potential for wearable robotics and next-generation prosthetic systems.
+            </p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+
+  <br><br>
+  <section class="representation">
+    <div class="container">
+      <div class="columns is-centered has-text-centered">
+        <div class="column is-full-width">
+          <h2 class="title is-3">Intent Detection Examples</h2>
+          <div class="content has-text-justified">
+            <div class="column is-full-width" style="color: black;">
+              <b>(1) Same Subject, Different Task</b>. On a new, unseen subject, ReactEMG accurately detects open and close intents across diverse real-world tasks that contain different arm movements.
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- First figure, now 80% width and centered -->
+      <div class="columns is-centered">
+        <div class="column is-full-width">
+          <div class="columns is-centered">
+            <div class="column content">
+              <picture class="image">
+                <img
+                  alt="offline_prediction_6"
+                  src="static/img/offline_prediction_6.png"
+                  style="width: 80%; margin: 0 auto; display: block; border-radius:10px;"
+                >
+              </picture>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="columns is-centered">
+        <div class="column is-full-width">
+          <div class="content has-text-left">
+            <div class="column is-full-width" style="color: black;">
+              <b>(2) Same Task, Different Subjects</b>. In the static hanging task (subjects perform open and close gestures with the arm hanging freely at the side) ReactEMG accurately detects intents across different subjects, even when EMG signals exhibit vastly different coactivation patterns.
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="columns is-centered">
+        <div class="column is-full-width">
+          <div class="columns is-centered">
+            <div class="column content">
+              <picture class="image">
+                <img
+                  alt="offline_prediction_subject2"
+                  src="static/img/offline_prediction_9.png"
+                  style="width: 80%; margin: 0 auto; display: block; border-radius:10px;"
+                >
+              </picture>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <br><br>
+  <section class="representation">
+    <div class="container">
+      <div class="columns is-centered has-text-centered">
+        <div class="column is-full-width">
+          <h2 class="title is-3">Method</h2>
+          <div class="content has-text-justified">
+            <p>
+              Our model treats 8-channel EMG signals and intent labels as two synchronized input streams: each is embedded, randomly masked in contiguous spans, and concatenated into a single sequence as input to Transformer encoders. The network is trained to reconstruct masked EMG signals (via a regression loss) and masked intent tokens (via a classification loss), which forces tight alignment between muscle activity and user intention. As a result, it delivers fast, stable intent predictions at every timestep—no manual features or per-user calibration required.
+            </p>
+          </div>
+        </div>
+      </div>
+
+      <div class="columns is-centered">
+        <div class="column is-full-width">
+          <div class="columns is-centered">
+            <div class="column content">
+              <picture class="image">
+                <img
+                  alt="offline_prediction_6"
+                  src="static/img/architecture.png"
+                  style="width: 80%; margin: 0 auto; display: block; border-radius:10px;"
+                >
+              </picture>
+            </div>
+          </div>
+        </div>
+      </div>
+  </section>
+
+  <br><br>
+  <section class="representation">
+    <div class="container">
+      <div class="columns is-centered has-text-centered">
+        <div class="column is-full-width">
+          <h2 class="title is-3">Metric for Device Control</h2>
+          <div class="content has-text-justified">
+            <p>
+              While traditional metrics such as per-timestep raw accuracy are important, they fail to capture situations where a transition to a new gesture is detected with delay, or maintenance of a stable gesture exhibits unwanted flicker in the prediction. To capture such cases, we use a new metric dubbed <strong>transition accuracy</strong>. According to this metric, a transition is considered to be successfully detected only if the model output correctly transitions between intents close enough to the ground truth change ("reaction buffer" in the image below), and exhibits no instability either before or after the transition ("maintenance period").
+            </p>
+          </div>
+        </div>
+      </div>
+
+      <div class="columns is-centered">
+        <div class="column is-full-width">
+          <div class="columns is-centered">
+            <div class="column content">
+              <picture class="image">
+                <img
+                  alt="offline_prediction_6"
+                  src="static/img/transition_metrics.png"
+                  style="width: 80%; margin: 0 auto; display: block; border-radius:10px;"
+                >
+              </picture>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="container">
+        <div class="column is-full-width">
+          <div class="content has-text-justified">
+            <p>
+              ReactEMG outperforms baselines on both raw accuracy and transition accuracy, particularly on datasets exhibiting direct transitions between different hand gestures and maintenance windows of varying lenghts, suggesting future applicability to controlling devices such as wearable robots.
+            </p>
+          </div>
+        </div>
+      </div>
+ </section>
+
+  <br><br>
+  <section class="representation">
+    <div class="container">
+      <div class="columns is-centered has-text-centered">
+        <div class="column is-full-width">
+          <h2 class="title is-3">Acknowledgment</h2>
+          <div class="content has-text-justified">
+            <p>
+              This work was supported in part by an Amazon Research Award and the Columbia University Data Science Institute Seed Program. Ava Chen was supported by NIH grant 1F31HD111301-01A1. The views and conclusions contained herein are those of the authors and should not be interpreted as necessarily representing the official policies, either expressed or implied, of the sponsors. We would like to thank Katelyn Lee, Eugene Sohn, Do-Gon Kim, and Dilara Baysal for their assistance with the hand orthosis hardware. We thank Zhanpeng He and Gagan Khandate for their helpful feedback and insightful discussions.
+            </p>
+          </div>
+        </div>
+      </div>
+ </section>
+ <br><br>
+  
+ <footer class="footer has-background-light">
+   <div class="content has-text-centered">
+     <p>
+       Website template modified from <a href="https://github.com/nerfies/nerfies.github.io">Nerfies</a>
+     </p>
+     <p>
+       This website is licensed under a <a href="https://creativecommons.org/licenses/by-sa/4.0/">Creative Commons Attribution-ShareAlike 4.0 International License.</a> 
+     </p>
+     <p>
+       <a href="#top">Back to top ↑</a>
+     </p>     
+   </div>
+ </footer>
+
+
+</html>
