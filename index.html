@@ -7,7 +7,7 @@
     content="Surface electromyography (sEMG) signals show promise for effective human–computer interfaces, particularly in rehabilitation and prosthetics. However, challenges remain in developing systems that respond quickly and reliably to user intent, across different subjects and without requiring time-consuming calibration. In this work, we propose a framework for EMG-based intent detection that addresses these challenges. Unlike traditional gesture recognition models that wait until a gesture is completed before classifying it, ReactEMG uses a segmentation strategy to assign intent labels at every timestep as the gesture unfolds. We introduce a novel masked modeling strategy that aligns muscle activations with their corresponding user intents, enabling rapid onset detection and stable tracking of ongoing gestures. In evaluations against baseline methods, considering both accuracy and stability for device control, our approach surpasses state-of-the-art performance in zero-shot transfer conditions, demonstrating its potential for wearable robotics and next-generation prosthetic systems.">
   <meta name="author" content="">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>Zero-Shot, Low-Latency Intent Detection via sEMG</title>
+  <title>ReactEMG: Stable, Low-Latency Intent Detection from sEMG via Masked Modeling</title>
 
   <link href="https://fonts.googleapis.com/css?family=Google+Sans|Noto+Sans|Castoro" rel="stylesheet">
 
@@ -52,7 +52,7 @@
 
             <div class="publication-header">
               <h1 class="title is-2 publication-title">
-                <b>ReactEMG</b>: Zero-Shot, Low-Latency Intent Detection via sEMG
+                <b>ReactEMG</b>: Stable, Low-Latency Intent Detection from sEMG via Masked Modeling
               </h1>
 
               <p class="subtitle is-size-5-mobile is-flex is-flex-wrap-wrap is-justify-content-center"
@@ -140,7 +140,7 @@
           <h2 class="title is-3">Abstract</h2>
           <div class="content has-text-justified">
             <p>
-              Surface electromyography (sEMG) signals show promise for effective human-machine interfaces, particularly in rehabilitation and prosthetics. However, challenges remain in developing systems that respond quickly and reliably to user intent, across different subjects and without requiring time-consuming calibration. In this work, we propose a framework for EMG-based intent detection that addresses these challenges. We cast intent detection as per-timestep segmentation of continuous sEMG streams, assigning labels as gestures unfold in real time. We introduce a masked modeling training strategy that aligns muscle activations with their corresponding user intents, enabling rapid onset detection and stable tracking of ongoing gestures. In evaluations against baseline methods, using metrics that capture both accuracy and stability for device control, our approach achieves state-of-the-art performance in zero-shot conditions. These results demonstrate its potential for wearable robotics and next-generation prosthetic systems.
+              Surface electromyography (sEMG) signals show promise for effective human-machine interfaces, particularly in rehabilitation and prosthetics. However, challenges remain in developing systems that respond quickly to user intent, produce stable flicker-free output suitable for device control, and work across different subjects without time-consuming calibration. In this work, we propose a framework for EMG-based intent detection that addresses these challenges. We cast intent detection as per-timestep segmentation of continuous sEMG streams, assigning labels as gestures unfold in real time. We introduce a masked modeling training strategy that aligns muscle activations with their corresponding user intents, enabling rapid onset detection and stable tracking of ongoing gestures. In evaluations against baseline methods, using metrics that capture accuracy, latency and stability for device control, our approach achieves state-of-the-art performance in zero-shot conditions. These results demonstrate its potential for wearable robotics and next-generation prosthetic systems.
             </p>
           </div>
         </div>
