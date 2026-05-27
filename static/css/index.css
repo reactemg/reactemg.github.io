@@ -244,7 +244,7 @@ a:hover { text-decoration-color: var(--text); }
 
 /* TL;DR card under hero */
 .tldr {
-  max-width: var(--max-width-narrow);
+  max-width: var(--max-width);
   margin: 2rem auto 0;
   padding: 1.1rem 1.4rem;
   background: var(--bg-alt);
